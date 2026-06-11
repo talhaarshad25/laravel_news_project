@@ -14,3 +14,10 @@ yarn-error.log
 /.idea
 /.vscode
 
+# Python testing artifacts
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
