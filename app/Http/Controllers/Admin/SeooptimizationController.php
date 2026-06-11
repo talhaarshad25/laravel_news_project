@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\News;
 use App\Models\Seooptimization;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\URL;
+use Spatie\Sitemap\Sitemap;
+use Spatie\Sitemap\Tags\Url as SitemapUrl;
 
 class SeooptimizationController extends Controller
 {
@@ -71,8 +72,7 @@ class SeooptimizationController extends Controller
 
     public function maanSeooptimzationSitemape()
     {
-        $site = App::make('sitemap');
-        //$site->add(URL::to('/'), date("Y-m-d h:i:s"),1,'daily');
+        $sitemap = Sitemap::create();
 
         $latestnews = News::join('newssubcategories','news.subcategory_id','=','newssubcategories.id')
             ->join('newscategories','newssubcategories.category_id','=','newscategories.id')
@@ -80,10 +80,15 @@ class SeooptimizationController extends Controller
             ->latest()
             ->get();
         foreach ($latestnews as $news){
-            $site->add(URL::to(strtolower($news->news_category)), $news->created_at,1.0,'daily');
+            $sitemap->add(
+                SitemapUrl::create(URL::to(strtolower($news->news_category)))
+                    ->setLastModificationDate($news->created_at)
+                    ->setChangeFrequency(SitemapUrl::CHANGE_FREQUENCY_DAILY)
+                    ->setPriority(1.0)
+            );
         }
 
-        $site->store('xml','sitemap');
+        $sitemap->writeToFile(public_path('sitemap.xml'));
 
         $this->setSuccess('Generated');
         return redirect()->route('admin.seo.index');
