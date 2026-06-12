@@ -3,8 +3,9 @@
 use App\Models\News;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\URL;
+use Spatie\Sitemap\Sitemap;
+use Spatie\Sitemap\Tags\Url as SitemapUrl;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\NationalController;
 use App\Http\Controllers\Frontend\WorldController;
@@ -306,8 +307,7 @@ Route::prefix('maanuser')->name('maanuser.')->group(function (){
     Route::get('/post',[MaanuserController::class,'maanUserPost'])->name('post')->middleware('auth:maanuser');
 });
 Route::get('/sitemap',function (){
-    $site = App::make('sitemap');
-    //$site->add(URL::to('/'), date("Y-m-d h:i:s"),1,'daily');
+    $sitemap = Sitemap::create();
 
     $latestnews = News::join('newssubcategories','news.subcategory_id','=','newssubcategories.id')
         ->join('newscategories','newssubcategories.category_id','=','newscategories.id')
@@ -315,15 +315,17 @@ Route::get('/sitemap',function (){
         ->latest()
         ->get();
     foreach ($latestnews as $news){
-        $site->add(URL::to(strtolower($news->news_category)), $news->created_at,1.0,'daily');
+        $sitemap->add(
+            SitemapUrl::create(URL::to(strtolower($news->news_category)))
+                ->setLastModificationDate($news->created_at)
+                ->setChangeFrequency(SitemapUrl::CHANGE_FREQUENCY_DAILY)
+                ->setPriority(1.0)
+        );
     }
 
-    $site->store('xml','sitemap');
-    return response ()->view ('sitemap.sitemap', [
-        'latestnewses' => $latestnews,
-    ])/*->header ('Content-Type', 'text/xml')*/;
+    $sitemap->writeToFile(public_path('sitemap.xml'));
 
-
+    return redirect('/sitemap.xml');
 });
 /* clear all cache */
 Route::get('/clear-all', function () {
