@@ -7,7 +7,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Mockery\Exception;
+use Exception;
 use Symfony\Component\Console\Input\Input;
 
 class RoleController extends Controller
