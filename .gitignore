@@ -14,3 +14,14 @@ yarn-error.log
 /.idea
 /.vscode
 
+# Runtime artifacts
+/composer.phar
+/public/sitemap.xml
+
+# Python testing artifacts
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo

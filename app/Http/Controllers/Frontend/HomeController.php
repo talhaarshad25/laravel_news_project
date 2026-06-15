@@ -9,10 +9,11 @@ use App\Models\Newscategory;
 use App\Models\Photogallery;
 use App\Models\Videogallery;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
+use Spatie\Sitemap\Sitemap;
+use Spatie\Sitemap\Tags\Url as SitemapUrl;
 use App\Models\Advertisement;
 
 class HomeController extends Controller
@@ -239,8 +240,7 @@ class HomeController extends Controller
 
     public function sitemap()
     {
-        $site = App::make('sitemap');
-        //$site->add(URL::to('/'), date("Y-m-d h:i:s"),1,'daily');
+        $sitemap = Sitemap::create();
 
         $latestnews = News::join('newssubcategories','news.subcategory_id','=','newssubcategories.id')
             ->join('newscategories','newssubcategories.category_id','=','newscategories.id')
@@ -248,11 +248,15 @@ class HomeController extends Controller
             ->latest()
             ->get();
         foreach ($latestnews as $news){
-            $site->add(URL::to(strtolower($news->news_category)), $news->created_at,1.0,'daily');
+            $sitemap->add(
+                SitemapUrl::create(URL::to(strtolower($news->news_category)))
+                    ->setLastModificationDate($news->created_at)
+                    ->setChangeFrequency(SitemapUrl::CHANGE_FREQUENCY_DAILY)
+                    ->setPriority(1.0)
+            );
         }
 
-        $site->store('xml','sitemap');
-
+        $sitemap->writeToFile(public_path('sitemap.xml'));
     }
 
     public function subscribeAjax(Request $request)

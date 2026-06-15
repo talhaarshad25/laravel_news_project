@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Maanuser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Mockery\Exception;
+use Exception;
 
 class SignupController extends Controller
 {
